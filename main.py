@@ -134,15 +134,11 @@ class Sim:
                 print(self.getTileCoords())
 
                 if coords in lastTiles[:-1]:
-                    print("-1")
                     self.score -= 1
                 else:
-                    print("+1")
                     self.score += 1
 
                 lastTiles.append(self.getTileCoords())
-
-
 
             if len(lastTiles) >= 5:
                 lastTiles.pop(0)
@@ -150,6 +146,22 @@ class Sim:
             # Check whether or not state is faulty
             if self.matrix.ifPixel(self.xPos, self.yPos):
                 return self.score
+
+    def getObservation4(self):
+        add = lambda a, b: (a[0] + b[0], a[1] + b[1])
+
+        stepSize = [(0, 1), (1, 0), (-1, 0), (0, -1)]
+        stepAmount = [0, 0, 0, 0]
+
+        # count the amount of empty pixels for each direction
+        for i in range(len(stepAmount)):
+            coords = (self.xPos, self.yPos)
+            while not self.matrix.ifPixel(*coords):
+                stepAmount[i] += 1
+                coords = add(coords, stepSize[i])
+
+        # calculate pixels as percentage of max
+        return [1 - stepAmount[x]/max(self.matrix.width, self.matrix.height) for x in range(len(stepAmount))]
 
 
 def checkManualInput(sim: Sim):
@@ -161,6 +173,17 @@ def checkManualInput(sim: Sim):
         sim.ySpeed -= 0.2 if sim.ySpeed > -sim.maxSpeed else 0
     if keyboard.is_pressed('s'):
         sim.ySpeed += 0.2 if sim.ySpeed < sim.maxSpeed else 0
+
+    print(sim.getObservation4())
+
+def fitnessFunc(genome: list[list[float]], rounds):
+    pass
+
+    # for each circuit
+        # for x rounds
+            # run simulation
+
+GA = GeneticAlgorithm("CircuitDot", fitnessFunc, 4, 5, mutationChance=0.05)
 
 
 sim = Sim(checkManualInput)
