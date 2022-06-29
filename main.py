@@ -1,13 +1,9 @@
 import os
-from datetime import datetime
 from typing import Callable
 from videophy import Stream
 from PIL import Image, ImageDraw
-import time
 import keyboard
-
-import numpy as np
-from numpy import asarray
+from GeneticAlgorithm import GeneticAlgorithm
 
 
 # choose
@@ -45,7 +41,7 @@ class SimpleMatrix:
             outPath += "]"
         return outPath
 
-    def getRendering(self, dot=(-1, -1), zones=False):
+    def getRendering(self, dot=(-1, -1), zones=False, score=None):
 
         img = self.img.copy()
 
@@ -53,6 +49,9 @@ class SimpleMatrix:
         draw = ImageDraw.Draw(img)
         if dot != (-1, -1):
             draw.ellipse([dot[0] - 3, dot[1] - 3, dot[0] + 3, dot[1] + 3], fill=(255, 0, 0))
+
+        if score is not None:
+            draw.text((10, 10), f"score: {score}", fill=(0, 0, 0))
 
         return img
 
@@ -84,8 +83,8 @@ class Sim:
 
         self.maxSpeed = 3
 
-        self.xSpeed = 3
-        self.ySpeed = 3
+        self.xSpeed = 0
+        self.ySpeed = 0
         self.xPos = 450
         self.yPos = 550
 
@@ -101,6 +100,9 @@ class Sim:
             self.twoD.append(row)
         self.matrix = SimpleMatrix(self.twoD)
 
+    def getTileCoords(self, tileSize=100):
+        return int(self.xPos // tileSize), int(self.yPos // tileSize)
+
     def reset(self):
         self.xSpeed = 0
         self.ySpeed = 0
@@ -112,6 +114,8 @@ class Sim:
     def start(self, show=True):
 
         stream = Stream()
+        lastTiles = []
+        lastTiles.append(self.getTileCoords())
 
         while True:
 
@@ -121,8 +125,27 @@ class Sim:
             self.yPos += self.ySpeed
 
             if show:
-                rendering = self.matrix.getRendering(dot=(self.xPos, self.yPos))
+                rendering = self.matrix.getRendering(dot=(self.xPos, self.yPos), score=self.score)
                 stream.newFrame(rendering)
+
+            # new tile entered
+            coords = self.getTileCoords()
+            if coords != lastTiles[-1]:
+                print(self.getTileCoords())
+
+                if coords in lastTiles[:-1]:
+                    print("-1")
+                    self.score -= 1
+                else:
+                    print("+1")
+                    self.score += 1
+
+                lastTiles.append(self.getTileCoords())
+
+
+
+            if len(lastTiles) >= 5:
+                lastTiles.pop(0)
 
             # Check whether or not state is faulty
             if self.matrix.ifPixel(self.xPos, self.yPos):
@@ -143,7 +166,6 @@ def checkManualInput(sim: Sim):
 sim = Sim(checkManualInput)
 
 while True:
-
     sim.start(show=True)
     sim.reset()
 
