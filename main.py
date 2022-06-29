@@ -68,7 +68,7 @@ class Helpers:
 
 class Sim:
 
-    def __init__(self, onTick: Callable):
+    def __init__(self, onTick: Callable, imagePath: str):
 
         """
         onTick applies xSpeed and ySpeed to position
@@ -78,7 +78,7 @@ class Sim:
 
         # Open the image form working directory
         self.onTick = onTick
-        self.imagePath = os.path.join("circuits", "1127809196775976634.png")
+        self.imagePath = imagePath
         self.image: Image = Image.open(self.imagePath)
 
         self.maxSpeed = 3
@@ -116,6 +116,8 @@ class Sim:
         stream = Stream()
         lastTiles = []
         lastTiles.append(self.getTileCoords())
+        maxTicks = 1000
+        ticks = 0
 
         while True:
 
@@ -131,7 +133,6 @@ class Sim:
             # new tile entered
             coords = self.getTileCoords()
             if coords != lastTiles[-1]:
-                print(self.getTileCoords())
 
                 if coords in lastTiles[:-1]:
                     self.score -= 1
@@ -144,8 +145,10 @@ class Sim:
                 lastTiles.pop(0)
 
             # Check whether or not state is faulty
-            if self.matrix.ifPixel(self.xPos, self.yPos):
+            if self.matrix.ifPixel(self.xPos, self.yPos) or ticks > maxTicks:
                 return self.score
+
+            ticks += 1
 
     def getObservation4(self):
         add = lambda a, b: (a[0] + b[0], a[1] + b[1])
@@ -174,22 +177,42 @@ def checkManualInput(sim: Sim):
     if keyboard.is_pressed('s'):
         sim.ySpeed += 0.2 if sim.ySpeed < sim.maxSpeed else 0
 
-    print(sim.getObservation4())
+def checkGAInput(sim: Sim):
+    observation = sim.getObservation4()
+
+    #
+    # print(sim.getObservation4())
 
 def fitnessFunc(genome: list[list[float]], rounds):
-    pass
 
     # for each circuit
-        # for x rounds
-            # run simulation
+    totalFitness = 0
+    totalRounds = 0
+    for circuit in os.listdir("circuits"):
+        path = os.path.join("circuits", circuit)
+        print(path)
+        sim = Sim(checkManualInput, path)
+        # run round x times
+        for i in range(rounds):
+            fitness = sim.start(show=True)
+            print(f"fitness on {path} round {i}: {fitness}")
+            sim.reset()
 
-GA = GeneticAlgorithm("CircuitDot", fitnessFunc, 4, 5, mutationChance=0.05)
+            # Keep track of score
+            totalFitness += fitness
+            totalRounds += 1
 
+    print(f"Average fitness = {totalFitness/totalRounds}")
+    return totalFitness/totalRounds
 
-sim = Sim(checkManualInput)
+# GA = GeneticAlgorithm("CircuitDot", fitnessFunc, 4, 5, mutationChance=0.05)
 
-while True:
-    sim.start(show=True)
-    sim.reset()
+fitnessFunc(None, 1)
+
+# sim = Sim(checkManualInput, os.path.join("circuits", "1127809196775976634.png"))
+#
+# while True:
+#     sim.start(show=True)
+#     sim.reset()
 
 # Simulation(None, None)
