@@ -8,8 +8,8 @@ from GeneticAlgorithm import GeneticAlgorithm
 import math
 
 
-global_Show = False
-
+global_Show = True
+startingRandomness = 25
 
 class SimpleMatrix:
 
@@ -83,8 +83,8 @@ class Sim:
         self.image: Image = Image.open(self.imagePath)
 
         self.maxSpeed = 3
-        self.startingX = 450 + random.choice(range(-10, 11))
-        self.startingY = 550 + random.choice(range(-10, 11))
+        self.startingX = 450 + random.choice(range(-startingRandomness, startingRandomness))
+        self.startingY = 550 + random.choice(range(-startingRandomness, startingRandomness))
 
         self.xSpeed = 0
         self.ySpeed = 0
@@ -109,8 +109,8 @@ class Sim:
     def reset(self):
         self.xSpeed = 0
         self.ySpeed = 0
-        self.xPos = 450 + random.choice(range(-10, 11))
-        self.yPos = 550 + random.choice(range(-10, 11))
+        self.xPos = 450 + random.choice(range(-self.startingX, self.startingX))
+        self.yPos = 550 + random.choice(range(-self.startingX, self.startingX))
 
         self.score = 0
 
