@@ -111,6 +111,7 @@ class GeneticAlgorithm:
         for i in newPopulation:
             if i not in elites:
                 i.mutate(self.mutationChance)
+                print("mutated!")
 
         # Determine fitness of Individuals
         self.determineFitnessForIndividuals(newPopulation)

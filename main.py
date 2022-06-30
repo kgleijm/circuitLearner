@@ -55,11 +55,7 @@ class SimpleMatrix:
         return img
 
     def ifPixel(self, x, y):
-        try:
-            return self[x, y]
-        except:
-            print("#### ifPIxel out of bounds, returning True")
-            return True
+        return self[x, y]
 
 
 class Helpers:
