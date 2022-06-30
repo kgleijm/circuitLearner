@@ -8,7 +8,7 @@ from GeneticAlgorithm import GeneticAlgorithm
 import math
 
 
-global_Show = True
+global_Show = False
 startingRandomness = 25
 
 class SimpleMatrix:
